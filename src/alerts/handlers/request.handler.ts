@@ -2,8 +2,8 @@ import {
   Alert,
   GrafanaRequest,
   MessageResult,
-} from 'src/interfaces/grafana.interfaces';
-import * as jsonMessages from './../messages.json';
+} from '../interfaces/grafana.interfaces';
+import * as jsonMessages from '../assets/messages.json';
 
 export class MessageHandler {
   format(message: GrafanaRequest): Promise<MessageResult[]> {
