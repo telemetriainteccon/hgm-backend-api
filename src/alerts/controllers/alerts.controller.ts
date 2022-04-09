@@ -1,17 +1,17 @@
 import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MessageHandler } from 'src/handlers/request.handler';
+import { MessageHandler } from '../handlers/request.handler';
 import {
   GrafanaRequest,
   MessageResult,
   LoggerResult,
-} from './../interfaces/grafana.interfaces';
-import { MailService } from './../services/mail.service';
-import { TwilioService } from './../services/twilio.service';
+} from '../interfaces/grafana.interfaces';
+import { MailService } from '../services/mail.service';
+import { TwilioService } from '../services/twilio.service';
 
-import * as sensors from './../sensors.json';
-import * as sensorsNoData from './../sensors-no-data.json';
-import * as jsonMessages from './../messages.json';
+import * as sensors from '../assets/sensors.json';
+import * as sensorsNoData from '../assets/sensors-no-data.json';
+import * as jsonMessages from '../assets/messages.json';
 
 @Controller('alerts')
 export class AlertsController {
@@ -58,7 +58,7 @@ export class AlertsController {
                 : sensorsNoData[message.location].sms;
 
               const loggerCollector = [];
-              if (process.env.USE_SMS.toLowerCase() == 'true') {
+              if (this.configService.get<string>('USE_SMS').toLowerCase() == 'true') {
                 for (let index = 0; index < smss.length; index++) {
                   const sms = smss[index];
                   const target = await this.twilioService.sendSms(
@@ -71,14 +71,14 @@ export class AlertsController {
                 }
               }
 
-              if (process.env.USE_EMAIL.toLowerCase() == 'true') {
+              if (this.configService.get<string>('USE_EMAIL').toLowerCase() == 'true') {
                 for (let index = 0; index < mails.length; index++) {
                   const mail = mails[index];
 
                   try {
                     const target = await this.mailService.sendEmail(
                       message.location,
-                      process.env.SMTP_USER,
+                      this.configService.get<string>('SMTP_USER'),
                       mail,
                       jsonMessages.mail_title,
                       message.mail_message,
@@ -96,13 +96,13 @@ export class AlertsController {
                 }
               }
 
-              if (process.env.USE_CALL.toLowerCase() == 'true') {
+              if (this.configService.get<string>('USE_CALL').toLowerCase() == 'true') {
                 for (let index = 0; index < calls.length; index++) {
                   const call = calls[index];
                   const target = await this.twilioService.makeCall(
                     message.location,
                     message.call_message,
-                    process.env.TWILIO_CALL_SENDER,
+                    this.configService.get<string>('TWILIO_CALL_SENDER'),
                     call,
                   );
 
