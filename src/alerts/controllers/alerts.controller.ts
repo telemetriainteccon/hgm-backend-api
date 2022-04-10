@@ -1,5 +1,15 @@
-import { Controller, Post, Body, HttpStatus, HttpCode } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpStatus,
+  HttpCode,
+  Inject,
+} from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import config from './../../config';
+
 import { MessageHandler } from '../handlers/request.handler';
 import {
   GrafanaRequest,
@@ -13,17 +23,21 @@ import * as sensors from '../assets/sensors.json';
 import * as sensorsNoData from '../assets/sensors-no-data.json';
 import * as jsonMessages from '../assets/messages.json';
 
+@ApiTags('Grafana WebHook')
 @Controller('alerts')
 export class AlertsController {
   private messageHandler: MessageHandler;
   constructor(
     private mailService: MailService,
     private twilioService: TwilioService,
-    private configService: ConfigService,
+    @Inject(config.KEY) private configService: ConfigType<typeof config>,
   ) {
     this.messageHandler = new MessageHandler();
   }
 
+  @ApiOperation({
+    summary: 'Receive Grafana alerts to send Emails/SMS/Calls',
+  })
   @Post('send')
   @HttpCode(HttpStatus.ACCEPTED)
   async send(@Body() payload: GrafanaRequest) {
@@ -58,7 +72,7 @@ export class AlertsController {
                 : sensorsNoData[message.location].sms;
 
               const loggerCollector = [];
-              if (this.configService.get<string>('USE_SMS').toLowerCase() == 'true') {
+              if (this.configService.server.useSms.toLowerCase() == 'true') {
                 for (let index = 0; index < smss.length; index++) {
                   const sms = smss[index];
                   const target = await this.twilioService.sendSms(
@@ -71,14 +85,14 @@ export class AlertsController {
                 }
               }
 
-              if (this.configService.get<string>('USE_EMAIL').toLowerCase() == 'true') {
+              if (this.configService.server.useEmail.toLowerCase() == 'true') {
                 for (let index = 0; index < mails.length; index++) {
                   const mail = mails[index];
 
                   try {
                     const target = await this.mailService.sendEmail(
                       message.location,
-                      this.configService.get<string>('SMTP_USER'),
+                      this.configService.smtp.user,
                       mail,
                       jsonMessages.mail_title,
                       message.mail_message,
@@ -96,13 +110,13 @@ export class AlertsController {
                 }
               }
 
-              if (this.configService.get<string>('USE_CALL').toLowerCase() == 'true') {
+              if (this.configService.server.useCall.toLowerCase() == 'true') {
                 for (let index = 0; index < calls.length; index++) {
                   const call = calls[index];
                   const target = await this.twilioService.makeCall(
                     message.location,
                     message.call_message,
-                    this.configService.get<string>('TWILIO_CALL_SENDER'),
+                    this.configService.twilio.callSender,
                     call,
                   );
 

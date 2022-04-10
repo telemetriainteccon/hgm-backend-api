@@ -1,21 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import 'dotenv/config';
+import { Injectable, Inject } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import config from './../../config';
 import * as twilio from 'twilio';
 
 @Injectable()
 export class TwilioService {
   private client: any;
-  private accountSid = process.env.TWILIO_ACCOUNT_ID;
-  private authToken = process.env.TWILIO_AUTH_TOKEN;
-  private messageServiceId = process.env.TWILIO_MESSAGE_SERVICE_ID;
+  private accountSid: string;
+  private authToken: string;
+  private messageServiceId: string;
 
-  constructor(private configService: ConfigService) {
-    this.accountSid = configService.get<string>('TWILIO_ACCOUNT_ID');
-    this.authToken = configService.get<string>('TWILIO_AUTH_TOKEN');
-    this.messageServiceId = configService.get<string>(
-      'TWILIO_MESSAGE_SERVICE_ID',
-    );
+  constructor(
+    @Inject(config.KEY) private configService: ConfigType<typeof config>,
+  ) {
+    this.accountSid = configService.twilio.accountId;
+    this.authToken = configService.twilio.authToken;
+    this.messageServiceId = configService.twilio.messageServiceId;
     this.client = twilio(this.accountSid, this.authToken);
   }
 
@@ -28,7 +28,7 @@ export class TwilioService {
           .then((message: any) => resolve(message.sid))
           .catch((err: any) => console.error(err))
           .done();
-      }, parseInt(this.configService.get<string>('REQUEST_TIMEOUT')));
+      }, parseInt(this.configService.server.requestTimeout));
     });
   }
 
@@ -53,7 +53,7 @@ export class TwilioService {
           )
           .catch((err: any) => console.error(err))
           .done();
-      }, parseInt(this.configService.get<string>('REQUEST_TIMEOUT')));
+      }, parseInt(this.configService.server.requestTimeout));
     });
   }
 
@@ -77,7 +77,7 @@ export class TwilioService {
             }),
           )
           .catch((err: any) => console.error(err));
-      }, parseInt(this.configService.get<string>('REQUEST_TIMEOUT')));
+      }, parseInt(this.configService.server.requestTimeout));
     });
   }
 }

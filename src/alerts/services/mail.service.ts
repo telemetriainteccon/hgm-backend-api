@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import 'dotenv/config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+import config from './../../config';
 import * as nodeMailer from 'nodemailer';
 
 @Injectable()
@@ -10,11 +10,13 @@ export class MailService {
   private smptPort: string;
   private smtpUser: string;
   private smtpPwd: string;
-  constructor(private configService: ConfigService) {
-    this.smtpHost = configService.get<string>('SMTP_HOST');
-    this.smptPort = configService.get<string>('SMTP_PORT');
-    this.smtpUser = configService.get<string>('SMTP_USER');
-    this.smtpPwd = configService.get<string>('SMTP_PASSWORD');
+  constructor(
+    @Inject(config.KEY) private configService: ConfigType<typeof config>,
+  ) {
+    this.smtpHost = configService.smtp.host;
+    this.smptPort = configService.smtp.port;
+    this.smtpUser = configService.smtp.user;
+    this.smtpPwd = configService.smtp.password;
 
     this.transporter = nodeMailer.createTransport({
       host: this.smtpHost,
@@ -52,7 +54,7 @@ export class MailService {
             }),
           )
           .catch((err: any) => console.error(err));
-      }, parseInt(this.configService.get<string>('REQUEST_TIMEOUT')));
+      }, parseInt(this.configService.server.requestTimeout));
     });
   }
 }
