@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import config from './../../config';
+import config from '../../config';
 import * as nodeMailer from 'nodemailer';
 
 @Injectable()
@@ -26,13 +26,12 @@ export class MailService {
   }
 
   sendEmail(
-    location: string,
     from: string,
     to: string,
     subject: string,
     text: string,
     html: string,
-  ) {
+  ): Promise<boolean> {
     return new Promise((resolve) => {
       setTimeout(() => {
         this.transporter.verify().then().catch(console.error);
@@ -44,15 +43,7 @@ export class MailService {
             text: text,
             html: html,
           })
-          .then(() =>
-            resolve({
-              location: location,
-              target: to,
-              type: 'MAIL',
-              logId: '',
-              date: Date(),
-            }),
-          )
+          .then(() => resolve(true))
           .catch((err: any) => console.error(err));
       }, parseInt(this.configService.server.requestTimeout));
     });

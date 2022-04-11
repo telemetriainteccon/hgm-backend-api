@@ -5,10 +5,17 @@ export default registerAs('config', () => {
     server: {
       host: process.env.SERVER_HOST,
       port: process.env.SERVER_PORT,
-      requestTimeout: process.env.REQUEST_TIMEOUT,
+      requestTimeout: process.env.SERVER_REQUEST_TIMEOUT,
       useSms: process.env.USE_SMS,
       useEmail: process.env.USE_EMAIL,
       useCall: process.env.USE_CALL,
+    },
+    database: {
+      name: process.env.DATABASE_NAME,
+      user: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      host: process.env.DATABASE_HOST,
+      port: process.env.DATABASE_PORT,
     },
     twilio: {
       accountId: process.env.TWILIO_ACCOUNT_ID,

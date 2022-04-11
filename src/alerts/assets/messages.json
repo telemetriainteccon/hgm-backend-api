@@ -7,7 +7,7 @@
     "info5": "[AlertLink] = Web Link to Grafana",
     "info6": "[AlertDate] = Date From grafana alerts",
 
-    "sms": "ALERTA, [AlertName],sensor fuera de rango,valor actual del sensor [AlertValue]C, Fecha: [AlertDate]",
+    "sms": "ALERTA, [AlertName],sensor fuera de rango,valor actual del sensor [AlertValue]C, Fecha: [AlertDate] y [AlertDateRepeated]",
 
     "sms_no_data": "[AlertName],el equipo dejo de transmitir datos, Fecha: [AlertDate]",
 

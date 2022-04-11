@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import config from './../../config';
+import config from '../../config';
 import * as twilio from 'twilio';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class TwilioService {
   }
 
   // Send SMS message
-  sendSms(location: string, message: string, to: string) {
+  sendSms(message: string, to: string) {
     return new Promise((resolve) => {
       setTimeout(() => {
         this.client.messages
@@ -42,15 +42,7 @@ export class TwilioService {
             messagingServiceSid: this.messageServiceId,
             to: to,
           })
-          .then((message) =>
-            resolve({
-              location: location,
-              target: to,
-              type: 'SMS',
-              logId: message.sid,
-              date: Date(),
-            }),
-          )
+          .then((message) => resolve(message.sid))
           .catch((err: any) => console.error(err))
           .done();
       }, parseInt(this.configService.server.requestTimeout));
@@ -58,7 +50,7 @@ export class TwilioService {
   }
 
   // Make Call message
-  makeCall(location: string, message: string, from: string, to: string) {
+  makeCall(message: string, from: string, to: string) {
     return new Promise((resolve) => {
       setTimeout(() => {
         this.client.calls
@@ -67,15 +59,7 @@ export class TwilioService {
             to: to,
             from: from,
           })
-          .then((call) =>
-            resolve({
-              location: location,
-              target: to,
-              type: 'CALL',
-              logId: call.sid,
-              date: Date(),
-            }),
-          )
+          .then((call) => resolve(call.sid))
           .catch((err: any) => console.error(err));
       }, parseInt(this.configService.server.requestTimeout));
     });
