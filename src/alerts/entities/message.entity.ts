@@ -1,6 +1,6 @@
 import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'messages' })
 export class Message {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,18 +11,18 @@ export class Message {
   @Column({ type: 'varchar', length: 255 })
   mail: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  mail_title: string;
+  @Column({ name: 'mail_title', type: 'varchar', length: 255 })
+  mailTitle: string;
 
   @Column({ type: 'varchar', length: 255 })
   call: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  no_data_sms: string;
+  @Column({ name: 'no_data_sms', type: 'varchar', length: 255 })
+  noDataSms: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  no_data_mail: string;
+  @Column({ name: 'no_data_mail', type: 'varchar', length: 255 })
+  noDataMail: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  no_data_call: string;
+  @Column({ name: 'no_data_call', type: 'varchar', length: 255 })
+  noDataCall: string;
 }

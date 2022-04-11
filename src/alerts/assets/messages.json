@@ -6,16 +6,17 @@
     "info4": "[AlertValue] = Valor actual del sensor",
     "info5": "[AlertLink] = Web Link to Grafana",
     "info6": "[AlertDate] = Date From grafana alerts",
+    "info7": "[AlertDateRepeated] = Date for Repeated Alert from grafana",
 
-    "sms": "ALERTA, [AlertName],sensor fuera de rango,valor actual del sensor [AlertValue]C, Fecha: [AlertDate] y [AlertDateRepeated]",
+    "sms": "ALERTA, [AlertName],sensor fuera de rango,valor actual del sensor [AlertValue]C, Fecha: [AlertDate], Repeticion: [AlertDateRepeated]",
 
-    "sms_no_data": "[AlertName],el equipo dejo de transmitir datos, Fecha: [AlertDate]",
+    "sms_no_data": "[AlertName],el equipo dejo de transmitir datos, Fecha: [AlertDate], Repeticion: [AlertDateRepeated]",
 
     "mail_title": "ALERTA TELEMETRÍA!!...",
 
-    "mail": "Alerta de [AlertVariable], [AlertName], sensor fuera de rango. Valor actual del sensor [AlertValue][AlertMeassure], Fecha: [AlertDate]. Link plataforma web: https://telemetriahgm.grafana.net/dashboards",
+    "mail": "Alerta de [AlertVariable], [AlertName], sensor fuera de rango. Valor actual del sensor [AlertValue][AlertMeassure], Fecha: [AlertDate], Repeticion: [AlertDateRepeated]. Link plataforma web: https://telemetriahgm.grafana.net/dashboards",
 
-    "mail_no_data": "Alerta de [AlertName], el equipo dejó de transmitir datos, Fecha: [AlertDate]. Link plataforma web: https://telemetriahgm.grafana.net/dashboards",
+    "mail_no_data": "Alerta de [AlertName], el equipo dejó de transmitir datos, Fecha: [AlertDate], Repeticion: [AlertDateRepeated]. Link plataforma web: https://telemetriahgm.grafana.net/dashboards",
 
     "call": "Alerta de temperatura, [AlertName], sensor fuera de rango, valor actual, [AlertValue] grados celcius",
 
