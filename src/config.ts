@@ -10,12 +10,17 @@ export default registerAs('config', () => {
       useEmail: process.env.USE_EMAIL,
       useCall: process.env.USE_CALL,
     },
-    database: {
-      name: process.env.DATABASE_NAME,
-      user: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      host: process.env.DATABASE_HOST,
-      port: process.env.DATABASE_PORT,
+    influx: {
+      InfluxOrg: process.env.INFLUX_ORG,
+      InfluxBucket: process.env.INFLUX_BUCKET,
+      InfluxHost1: process.env.INFLUX_HOST1,
+      InfluxHost2: process.env.INFLUX_HOST2,
+      InfluxHost3: process.env.INFLUX_HOST3,
+      InfluxHost4: process.env.INFLUX_HOST4,
+      InfluxToken1: process.env.INFLUX_TOKEN1,
+      InfluxToken2: process.env.INFLUX_TOKEN2,
+      InfluxToken3: process.env.INFLUX_TOKEN3,
+      InfluxToken4: process.env.INFLUX_TOKEN4,
     },
     twilio: {
       accountId: process.env.TWILIO_ACCOUNT_ID,
