@@ -25,6 +25,7 @@
     "migrations:show": "npm run typeorm -- migration:show"
   },
   "dependencies": {
+    "@influxdata/influxdb-client": "^1.24.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^2.0.0",
     "@nestjs/core": "^8.0.0",

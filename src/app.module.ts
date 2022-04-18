@@ -4,8 +4,7 @@ import config from './config';
 import * as Joi from 'joi';
 
 import { AlertsModule } from './alerts/alerts.module';
-import { UsersModule } from './users/users.module';
-import { DatabaseModule } from './database/database.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -18,11 +17,16 @@ import { DatabaseModule } from './database/database.module';
         SERVER_PORT: Joi.number().required(),
         SERVER_REQUEST_TIMEOUT: Joi.number().required(),
 
-        DATABASE_NAME: Joi.string().required(),
-        DATABASE_USER: Joi.string().required(),
-        DATABASE_PASSWORD: Joi.string().required(),
-        DATABASE_HOST: Joi.string().required(),
-        DATABASE_PORT: Joi.number().required(),
+        INFLUX_ORG: Joi.string().required(),
+        INFLUX_BUCKET: Joi.string().required(),
+        INFLUX_HOST1: Joi.string().required(),
+        INFLUX_HOST2: Joi.string().required(),
+        INFLUX_HOST3: Joi.string().required(),
+        INFLUX_HOST4: Joi.string().required(),
+        INFLUX_TOKEN1: Joi.string().required(),
+        INFLUX_TOKEN2: Joi.string().required(),
+        INFLUX_TOKEN3: Joi.string().required(),
+        INFLUX_TOKEN4: Joi.string().required(),
 
         TWILIO_ACCOUNT_ID: Joi.string().required(),
         TWILIO_AUTH_TOKEN: Joi.string().required(),
@@ -40,8 +44,7 @@ import { DatabaseModule } from './database/database.module';
       }),
     }),
     AlertsModule,
-    UsersModule,
-    DatabaseModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],
