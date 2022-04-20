@@ -99,7 +99,7 @@ export class ReportsService {
       (x: any) => x._start.substr(0, 10) == date.toISOString().substr(0, 10),
     );
 
-    return result ? result._value.toFixed(1) : -1;
+    return result ? result._value.toFixed(1) : '-';
   }
 
   ///
