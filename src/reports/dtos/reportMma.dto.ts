@@ -1,13 +1,13 @@
 export interface reportMmaDto {
   date: string;
   m: {
-    min: number;
-    max: number;
-    mean: number;
+    min: string | number;
+    max: string | number;
+    mean: string | number;
   };
   t: {
-    min: number;
-    max: number;
-    mean: number;
+    min: string | number;
+    max: string | number;
+    mean: string | number;
   };
 }

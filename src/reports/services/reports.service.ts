@@ -99,7 +99,9 @@ export class ReportsService {
       (x: any) => x._start.substr(0, 10) == date.toISOString().substr(0, 10),
     );
 
-    return result ? result._value.toFixed(1) : '-';
+    return result
+      ? Number(parseFloat(parseFloat(result._value).toFixed(2)).toFixed(1))
+      : '-';
   }
 
   ///
@@ -197,6 +199,7 @@ export class ReportsService {
   ///
   private async execInfluxQuery(queryString: string) {
     return new Promise((resolve) => {
+      console.log(queryString);
       Promise.all([
         this.executeQuery(queryString, this.influxHost1),
         this.executeQuery(queryString, this.influxHost2),
@@ -233,12 +236,8 @@ export class ReportsService {
       |> filter(fn: (r) => r["_measurement"] == "sensors")
       |> filter(fn: (r) => r["I"] == "${sensorId}")
       |> filter(fn: (r) => r["_field"] == "T")
+      |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
       |> ${functionName}()
-      ${
-        functionName !== 'mean'
-          ? `|> aggregateWindow(every: 1m, fn: ${functionName}, createEmpty: false)`
-          : ``
-      }
       |> set(key: "type",value: "${type}")
     `;
   }
