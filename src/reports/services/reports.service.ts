@@ -199,7 +199,6 @@ export class ReportsService {
   ///
   private async execInfluxQuery(queryString: string) {
     return new Promise((resolve) => {
-      console.log(queryString);
       Promise.all([
         this.executeQuery(queryString, this.influxHost1),
         this.executeQuery(queryString, this.influxHost2),
