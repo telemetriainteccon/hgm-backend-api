@@ -5,6 +5,9 @@ import config from './../../config';
 import { reportMmaDto } from '../dtos/reportMma.dto';
 
 type infoType =
+  | 'fullMin'
+  | 'fullMax'
+  | 'fullMean'
   | 'morningMin'
   | 'morningMax'
   | 'morningMean'
@@ -51,7 +54,12 @@ export class ReportsService {
   ///
   /// Gets Influx Values and return the Json result
   ///
-  async getReportMma(sensorId: number, minDateISO: Date, maxDateISO: Date) {
+  async getReportMma(
+    sensorId: number,
+    minDateISO: Date,
+    maxDateISO: Date,
+    type: string,
+  ) {
     const dates = this.getDatesbyRange(
       [],
       new Date(new Date(new Date(minDateISO).setHours(-24)).toISOString()),
@@ -60,28 +68,54 @@ export class ReportsService {
 
     dates.pop();
 
-    const queryString = this.getDynamicQueries(sensorId, dates);
+    const queryString = this.getDynamicQueries(sensorId, dates, type);
     const objResult: any = await this.execInfluxQuery(queryString);
 
     const reportMmaResult: reportMmaDto[] = [];
     for (let index = 0; index < dates.length; index++) {
       const date = dates[index];
 
+      const objFmin = this.filterListByDate(objResult.fullMinRes, date);
+      const objFmax = this.filterListByDate(objResult.fullMaxRes, date);
+      const objFmean = this.filterListByDate(objResult.fullMeanRes, date);
+      const objMmin = this.filterListByDate(objResult.morningMinRes, date);
+      const objMmax = this.filterListByDate(objResult.morningMaxRes, date);
+      const objMmean = this.filterListByDate(objResult.morningMeanRes, date);
+      const objAmin = this.filterListByDate(objResult.afternMinRes, date);
+      const objAmax = this.filterListByDate(objResult.afternMaxRes, date);
+      const objAmean = this.filterListByDate(objResult.afternMeanRes, date);
+
+      const _date = new Date(date).toLocaleDateString('es-CO', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+
       const newReportMmaResult: reportMmaDto = {
-        date: new Date(date).toLocaleDateString('es-CO', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        }),
+        date: _date,
+        f: {
+          timeMin: _date + ' ' + objFmin.time,
+          min: objFmin.value,
+          timeMax: _date + ' ' + objFmax.time,
+          max: objFmax.value,
+          timeMean: _date + ' ' + objFmean.time,
+          mean: objFmean.value,
+        },
         m: {
-          min: this.filterListByDate(objResult.morningMinRes, date),
-          max: this.filterListByDate(objResult.morningMaxRes, date),
-          mean: this.filterListByDate(objResult.morningMeanRes, date),
+          timeMin: _date + ' ' + objMmin.time,
+          min: objMmin.value,
+          timeMax: _date + ' ' + objMmax.time,
+          max: objMmax.value,
+          timeMean: _date + ' ' + objMmean.time,
+          mean: objMmean.value,
         },
         t: {
-          min: this.filterListByDate(objResult.afternMinRes, date),
-          max: this.filterListByDate(objResult.afternMaxRes, date),
-          mean: this.filterListByDate(objResult.afternMeanRes, date),
+          timeMin: _date + ' ' + objAmin.time,
+          min: objAmin.value,
+          timeMax: _date + ' ' + objAmax.time,
+          max: objAmax.value,
+          timeMean: _date + ' ' + objAmean.time,
+          mean: objAmean.value,
         },
       };
 
@@ -99,15 +133,23 @@ export class ReportsService {
       (x: any) => x._start.substr(0, 10) == date.toISOString().substr(0, 10),
     );
 
-    return result
-      ? Number(parseFloat(parseFloat(result._value).toFixed(2)).toFixed(1))
-      : '-';
+    return {
+      value: result
+        ? Number(parseFloat(parseFloat(result._value).toFixed(2)).toFixed(1))
+        : '-',
+      time: result?._time
+        ? new Date(result._time).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })
+        : '-',
+    };
   }
 
   ///
   /// Gets Influx Query Template for MAX
   ///
-  private getDynamicQueries(sensorId: number, dates: Date[]) {
+  private getDynamicQueries(sensorId: number, dates: Date[], type: string) {
     let queryString = '';
 
     const influxTables = [];
@@ -119,6 +161,39 @@ export class ReportsService {
       const afternMaxDate = new Date(new Date(date).setHours(23, 59, 59));
 
       queryString +=
+        `tfmin${index} =` +
+        this.getQueryTemplate(
+          'fullMin',
+          'min',
+          sensorId,
+          morningMinDate,
+          afternMaxDate,
+          type,
+        );
+
+      queryString +=
+        `tfmax${index} =` +
+        this.getQueryTemplate(
+          'fullMax',
+          'max',
+          sensorId,
+          morningMinDate,
+          afternMaxDate,
+          type,
+        );
+
+      queryString +=
+        `tfmean${index} =` +
+        this.getQueryTemplate(
+          'fullMean',
+          'mean',
+          sensorId,
+          morningMinDate,
+          afternMaxDate,
+          type,
+        );
+
+      queryString +=
         `tmmin${index} =` +
         this.getQueryTemplate(
           'morningMin',
@@ -126,6 +201,7 @@ export class ReportsService {
           sensorId,
           morningMinDate,
           morningMaxDate,
+          type,
         );
 
       queryString +=
@@ -136,6 +212,7 @@ export class ReportsService {
           sensorId,
           morningMinDate,
           morningMaxDate,
+          type,
         );
 
       queryString +=
@@ -146,6 +223,7 @@ export class ReportsService {
           sensorId,
           morningMinDate,
           morningMaxDate,
+          type,
         );
 
       queryString +=
@@ -156,6 +234,7 @@ export class ReportsService {
           sensorId,
           afternMinDate,
           afternMaxDate,
+          type,
         );
 
       queryString +=
@@ -166,6 +245,7 @@ export class ReportsService {
           sensorId,
           afternMinDate,
           afternMaxDate,
+          type,
         );
 
       queryString +=
@@ -176,8 +256,12 @@ export class ReportsService {
           sensorId,
           afternMinDate,
           afternMaxDate,
+          type,
         );
 
+      influxTables.push(`tfmin${index}`);
+      influxTables.push(`tfmax${index}`);
+      influxTables.push(`tfmean${index}`);
       influxTables.push(`tmmin${index}`);
       influxTables.push(`tmmax${index}`);
       influxTables.push(`tmmean${index}`);
@@ -209,6 +293,9 @@ export class ReportsService {
         const res = val && val.length > 0 ? val[0] : [];
 
         resolve({
+          fullMinRes: res.filter((x: any) => x.type == 'fullMin'),
+          fullMaxRes: res.filter((x: any) => x.type == 'fullMax'),
+          fullMeanRes: res.filter((x: any) => x.type == 'fullMean'),
           morningMinRes: res.filter((x: any) => x.type == 'morningMin'),
           morningMaxRes: res.filter((x: any) => x.type == 'morningMax'),
           morningMeanRes: res.filter((x: any) => x.type == 'morningMean'),
@@ -229,12 +316,13 @@ export class ReportsService {
     sensorId: number,
     minDateISO: Date,
     maxDateISO: Date,
+    sensorType: string,
   ) {
     return `from(bucket: "${this.configService.influx.InfluxBucket}")
       |> range(start: ${minDateISO.toISOString()}, stop: ${maxDateISO.toISOString()})
       |> filter(fn: (r) => r["_measurement"] == "sensors")
       |> filter(fn: (r) => r["I"] == "${sensorId}")
-      |> filter(fn: (r) => r["_field"] == "T")
+      |> filter(fn: (r) => r["_field"] == "${sensorType}")
       |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
       |> ${functionName}()
       |> set(key: "type",value: "${type}")

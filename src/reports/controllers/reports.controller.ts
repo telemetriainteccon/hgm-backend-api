@@ -24,9 +24,15 @@ export class ReportsController {
     @Param('id') sensorId: number,
     @Query('minDate') minDateISO: Date,
     @Query('maxDate') maxDateISO: Date,
+    @Query('type') type: string,
   ) {
     try {
-      return this.reportsService.getReportMma(sensorId, minDateISO, maxDateISO);
+      return this.reportsService.getReportMma(
+        sensorId,
+        minDateISO,
+        maxDateISO,
+        type,
+      );
     } catch (error) {
       console.log(error);
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
