@@ -227,7 +227,14 @@ export class GrafanaService {
             );
             const res_message = JSON.parse(result);
 
-            if (alert.valueString == '') {
+            console.log(
+              'ValueString ---------------------------- ' + alert.valueString,
+            );
+
+            if (
+              alert.valueString == '' ||
+              alert.valueString.indexOf('NoData') != -1
+            ) {
               formattedObj.isNoData = true;
               formattedObj.sms_message = res_message.sms_no_data;
               formattedObj.mail_message = res_message.mail_no_data;
