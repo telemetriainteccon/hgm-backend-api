@@ -35,6 +35,14 @@ export class MailService {
     return new Promise((resolve) => {
       setTimeout(() => {
         this.transporter.verify().then().catch(console.error);
+
+        console.log('--------------------------');
+        console.log('From: ' + from);
+        console.log('To: ' + to);
+        console.log('Subject: ' + subject);
+        console.log('Text: ' + text);
+        console.log(' ');
+
         this.transporter
           .sendMail({
             from: from,

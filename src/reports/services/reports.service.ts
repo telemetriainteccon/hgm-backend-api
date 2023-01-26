@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InfluxDB, QueryApi } from '@influxdata/influxdb-client';
+import { InfluxDB, QueryApi, Point } from '@influxdata/influxdb-client';
 import { ConfigType } from '@nestjs/config';
 import config from './../../config';
 import { reportMmaDto } from '../dtos/reportMma.dto';
+import { Double } from 'typeorm';
 
 type infoType =
   | 'fullMin'
@@ -49,6 +50,139 @@ export class ReportsService {
       token: this.configService.influx.InfluxToken4,
       timeout: this.timeout,
     }).getQueryApi(this.configService.influx.InfluxOrg);
+  }
+
+  ///
+  /// Get Active servers by SensorId
+  ///
+  async GetActiveServersBySensorId(sensorId: number) {
+    const queryString = `from(bucket: "Hospital")
+                          |> range(start: 2020-01-01T05:00:00.000Z, stop: 2023-01-01T05:00:00.000Z)
+                          |> filter(fn: (r) => r["_measurement"] == "sensors")
+                          |> filter(fn: (r) => r["I"] == "${sensorId}")
+                          |> aggregateWindow(every: 5m, fn: last, createEmpty: false)
+                          |> count()`;
+
+    const result: any = await this.execInfluxRawQuery(queryString);
+
+    const activeDroplets = result.reduce(
+      (activeServers: any, data: any, index: number) => {
+        if (data.length > 0) activeServers.push(index + 1);
+        return activeServers;
+      },
+      [],
+    );
+
+    return activeDroplets;
+  }
+
+  ///
+  /// Insert data into Influx
+  ///
+  async loadData(
+    sensorId: number,
+    dropletId: number,
+    minDateISO: Date,
+    data: any,
+  ) {
+    for (const item of data) {
+      const time = item[0];
+      const valueT = item[1];
+      const valueH = item[2];
+
+      await this.insertPoint(
+        sensorId,
+        dropletId,
+        minDateISO,
+        'T',
+        valueT,
+        time,
+      );
+      await this.insertPoint(
+        sensorId,
+        dropletId,
+        minDateISO,
+        'H',
+        valueH,
+        time,
+      );
+    }
+
+    return 'OK';
+  }
+
+  ///
+  /// Insert point
+  ///
+  async insertPoint(
+    sensorId: number,
+    dropletId: number,
+    minDateISO: Date,
+    field: string,
+    value: Double,
+    time: string,
+  ) {
+    let credentials = {
+      url: this.configService.influx.InfluxHost1,
+      token: this.configService.influx.InfluxToken1,
+    };
+
+    switch (dropletId) {
+      case 2: {
+        credentials = {
+          url: this.configService.influx.InfluxHost2,
+          token: this.configService.influx.InfluxToken2,
+        };
+        break;
+      }
+      case 3: {
+        credentials = {
+          url: this.configService.influx.InfluxHost3,
+          token: this.configService.influx.InfluxToken3,
+        };
+        break;
+      }
+      case 4: {
+        credentials = {
+          url: this.configService.influx.InfluxHost4,
+          token: this.configService.influx.InfluxToken4,
+        };
+        break;
+      }
+      default:
+        break;
+    }
+
+    const writeApi = new InfluxDB(credentials).getWriteApi(
+      this.configService.influx.InfluxOrg,
+      this.configService.influx.InfluxBucket,
+      'ms',
+    );
+
+    writeApi.useDefaultTags({ host: `droplet${dropletId}`, I: `${sensorId}` });
+
+    const date = new Date(minDateISO);
+    const timeStamp = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      parseInt(time.split(':')[0]),
+      parseInt(time.split(':')[1]),
+      parseInt(time.split(':')[2]),
+    );
+
+    const newPointT = new Point('sensors')
+      .floatField(field, value)
+      .timestamp(timeStamp);
+
+    writeApi.writePoint(newPointT);
+
+    try {
+      await writeApi.close();
+      return 'OK';
+    } catch (e) {
+      return 'error - ' + e;
+    }
   }
 
   ///
@@ -303,6 +437,22 @@ export class ReportsService {
           afternMaxRes: res.filter((x: any) => x.type == 'afternMax'),
           afternMeanRes: res.filter((x: any) => x.type == 'afternMean'),
         });
+      });
+    });
+  }
+
+  ///
+  /// Execute the dynamic raw query on each INFLUX SERVER (1,2,3,4)
+  ///
+  private async execInfluxRawQuery(queryString: string) {
+    return new Promise((resolve) => {
+      Promise.all([
+        this.executeQuery(queryString, this.influxHost1),
+        this.executeQuery(queryString, this.influxHost2),
+        this.executeQuery(queryString, this.influxHost3),
+        this.executeQuery(queryString, this.influxHost4),
+      ]).then((result) => {
+        resolve(result);
       });
     });
   }
