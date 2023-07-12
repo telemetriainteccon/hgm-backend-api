@@ -58,6 +58,7 @@ export class TwilioService {
             twiml: `<Response><Say language="es-MX" voice="Polly.Miguel">${message}</Say></Response>`,
             to: to,
             from: from,
+            record: true,
           })
           .then((call) => resolve(call.sid))
           .catch((err: any) => console.error(err));
